@@ -1,0 +1,90 @@
+<template>
+  <div v-if="userMessage.type !== null && userMessage.message !== null" class="UserMessage">
+    <errorSVG v-if="userMessage.type === 'ERROR'" class="icon error" />
+    <infoSVG v-else class="icon info" />
+    <p>{{ userMessage.message }}</p>
+    <closeSVG v-if="userMessage.type === 'ERROR'" class="icon" id="closeIcon" @click="handleClose" />
+  </div>
+</template>
+
+<script lang="ts">
+import { computed, defineComponent, watchEffect } from 'vue';
+import { useStore } from 'vuex';
+import errorSVG from '@/assets/icons/error.svg';
+import infoSVG from '@/assets/icons/info.svg';
+import closeSVG from '@/assets/icons/close.svg';
+
+export default defineComponent({
+  name: 'UserMessageUI',
+  components: { errorSVG, infoSVG, closeSVG },
+  setup() {
+    const store = useStore();
+    const userMessage = computed(() => store.state.userMessage);
+
+    watchEffect(() => {
+      if (userMessage.value.type === 'INFO') {
+        setTimeout(() => {
+          store.commit('userMessage/clearUserMessage');
+        }, 2000);
+      }
+    });
+
+    const handleClose = () => store.commit('userMessage/clearUserMessage');
+
+    return { userMessage, handleClose };
+  }
+});
+</script>
+
+<style scoped lang="scss">
+.UserMessage {
+  position: fixed;
+  left: 50%;
+  bottom: 4vmin;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 80%;
+  padding: 12px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.9);
+
+  button {
+    flex: 0 0 auto;
+    height: 1.5em;
+    width: 1.5em;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--main-fg-color);
+    font-weight: bold;
+    cursor: pointer;
+
+    .icon {
+      padding: 0;
+      height: 100%;
+    }
+  }
+
+  p {
+    flex: 1 1 auto;
+    margin: 0;
+  }
+
+  .icon {
+    flex: 0 0 auto;
+    padding: 8px 16px 8px 8px;
+    fill: var(--main-fg-color);
+
+    &.error {
+      fill: var(--error-color);
+    }
+
+    &.info {
+      fill: var(--info-color);
+    }
+  }
+}
+</style>
